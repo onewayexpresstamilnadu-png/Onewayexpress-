@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ONE WAY EXPRESS - Outstation Drop Taxi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Poppins,Arial,sans-serif;background:#f5f7fb;color:#172033}
+header{position:sticky;top:0;z-index:1000;background:#111827;color:#fff;padding:14px 5%;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.logo{font-size:22px;font-weight:800;letter-spacing:.5px}
+.logo span{display:block;font-size:11px;color:#fbbf24;letter-spacing:1.5px}
+.phone{font-weight:700;font-size:14px}
+.hero{background:linear-gradient(135deg,#111827,#26344d);color:#fff;padding:48px 5% 38px;text-align:center}
+.hero h1{font-size:clamp(32px,8vw,58px);line-height:1.05}
+.hero h1 span{color:#fbbf24}
+.hero p{margin:12px auto 20px;max-width:700px;color:#dbe4f0}
+.btn{display:inline-block;border:0;border-radius:12px;padding:13px 20px;font:700 14px Poppins;cursor:pointer;text-decoration:none}
+.whatsapp{background:#22c55e;color:#fff}
+.call{background:#fbbf24;color:#111827;margin-left:8px}
+.wrap{max-width:1100px;margin:auto;padding:28px 5%}
+.tabs{display:flex;gap:8px;margin-bottom:18px}
+.tab{flex:1;padding:12px;border:0;border-radius:12px;background:#e5e7eb;font-weight:700;cursor:pointer}
+.tab.active{background:#111827;color:#fff}
+.panel{display:none}
+.panel.active{display:block}
+.card{background:#fff;border-radius:18px;padding:20px;margin-bottom:18px;box-shadow:0 8px 28px rgba(15,23,42,.08)}
+h2{font-size:22px;margin-bottom:14px}
+h3{margin-bottom:8px}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+label{font-size:12px;font-weight:700;color:#526070;display:block;margin-bottom:5px}
+input,select{width:100%;padding:12px;border:1px solid #d8dee8;border-radius:10px;font:500 14px Poppins;background:#fff}
+.full{grid-column:1/-1}
+.vehicle-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.vehicle{border:2px solid #e5e7eb;border-radius:14px;padding:14px;text-align:center;cursor:pointer}
+.vehicle.selected{border-color:#111827;background:#f8fafc}
+.vehicle b{display:block;font-size:18px}
+.vehicle small{color:#64748b}
+#map{height:320px;border-radius:14px;overflow:hidden}
+.fare{background:#111827;color:#fff;border-radius:16px;padding:18px}
+.fare-row{display:flex;justify-content:space-between;padding:6px 0}
+.total{font-size:24px;font-weight:800;border-top:1px solid #475569;margin-top:8px;padding-top:10px}
+.notice{background:#fff7ed;border-left:5px solid #f59e0b;padding:12px;border-radius:8px;font-size:13px}
+.action{width:100%;margin-top:12px;background:#111827;color:#fff}
+.success{display:none;background:#ecfdf5;border:1px solid #86efac;padding:14px;border-radius:12px;margin-top:12px}
+.job{border:1px solid #e5e7eb;border-radius:12px;padding:14px;margin:10px 0}
+.badge{display:inline-block;padding:4px 8px;border-radius:999px;background:#e0f2fe;font-size:11px;font-weight:700}
+footer{background:#111827;color:#cbd5e1;text-align:center;padding:22px;font-size:13px}
+@media(max-width:650px){
+ .grid{grid-template-columns:1fr}.full{grid-column:auto}
+ .vehicle-grid{grid-template-columns:1fr}
+ .call{margin-left:4px}
+ .phone{display:none}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">ONE WAY EXPRESS<span>OUTSTATION DROP TAXI</span></div>
+  <div class="phone">📞 8838313772</div>
+</header>
+
+<section class="hero">
+  <h1>ONE WAY <span>EXPRESS</span></h1>
+  <p>Outstation Drop Taxi • Tamil Nadu • Bangalore • Pondicherry</p>
+  <a class="btn whatsapp" href="https://wa.me/918838313772" target="_blank">💬 WhatsApp Booking</a>
+  <a class="btn call" href="tel:8838313772">📞 Call Now</a>
+</section>
+
+<main class="wrap">
+  <div class="tabs">
+    <button class="tab active" onclick="showPanel('customer',this)">CUSTOMER</button>
+    <button class="tab" onclick="showPanel('driver',this)">DRIVER</button>
+    <button class="tab" onclick="showPanel('admin',this)">ADMIN</button>
+  </div>
+
+  <section id="customer" class="panel active">
+    <div class="card">
+      <h2>🚖 Book Your One-Way Taxi</h2>
+      <div class="grid">
+        <div>
+          <label>Customer Name</label>
+          <input id="cname" placeholder="Your name">
+        </div>
+        <div>
+          <label>Mobile Number</label>
+          <input id="cphone" type="tel" placeholder="10-digit mobile number">
+        </div>
+        <div>
+          <label>From</label>
+          <input id="from" placeholder="Pickup city / location">
+        </div>
+        <div>
+          <label>To</label>
+          <input id="to" placeholder="Drop city / location">
+        </div>
+        <div>
+          <label>Travel Date</label>
+          <input id="date" type="date">
+        </div>
+        <div>
+          <label>Pickup Time</label>
+          <input id="time" type="time" value="12:00">
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>🚗 Select Vehicle</h2>
+      <div class="vehicle-grid">
+        <div class="vehicle selected" data-rate="14" data-name="Sedan" onclick="selectVehicle(this)">
+          <b>🚕 Sedan</b><small>₹14 / KM</small>
+        </div>
+        <div class="vehicle" data-rate="19" data-name="XUV" onclick="selectVehicle(this)">
+          <b>🚙 XUV</b><small>₹19 / KM</small>
+        </div>
+        <div class="vehicle" data-rate="21" data-name="Innova MUV" onclick="selectVehicle(this)">
+          <b>🚐 Innova</b><small>₹21 / KM</small>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>🗺️ Route</h2>
+      <div id="map"></div>
+      <div class="grid" style="margin-top:12px">
+        <div>
+          <label>Estimated KM</label>
+          <input id="km" type="number" min="1" value="100" oninput="calculateFare()">
+        </div>
+        <div>
+          <label>Extra Option</label>
+          <select id="extra" onchange="calculateFare()">
+            <option value="0">No Carrier</option>
+            <option value="300">Carrier + ₹300</option>
+          </select>
+        </div>
+      </div>
+      <div class="notice" style="margin-top:12px">
+        Permit charges and toll-gate fees are payable separately by the customer.
+      </div>
+    </div>
+
+    <div class="fare">
+      <div class="fare-row"><span>Distance Fare</span><b id="distanceFare">₹1,400</b></div>
+      <div class="fare-row"><span>Driver Bata</span><b>₹400</b></div>
+      <div class="fare-row"><span>Carrier</span><b id="carrierFare">₹0</b></div>
+      <div class="total fare-row"><span>Total</span><span id="total">₹1,800</span></div>
+      <div class="fare-row"><span>15% Advance</span><b id="advance">₹270</b></div>
+      <div class="fare-row"><span>Balance</span><b id="balance">₹1,530</b></div>
+    </div>
+
+    <div class="card">
+      <label><input id="agree" type="checkbox" style="width:auto"> I agree to the booking details and charges.</label>
+      <button class="btn action" onclick="bookTrip()">🚖 BOOK & SEND ON WHATSAPP</button>
+      <div id="success" class="success"></div>
+    </div>
+  </section>
+
+  <section id="driver" class="panel">
+    <div class="card">
+      <h2>👨‍✈️ Driver Panel</h2>
+      <div class="grid">
+        <div><label>Driver Name</label><input id="dname" placeholder="Driver name"></div>
+        <div><label>Driver Mobile</label><input id="dphone" type="tel" placeholder="Mobile number"></div>
+        <div><label>Vehicle Number</label><input id="dvehicle" placeholder="TN XX XX XXXX"></div>
+        <div><label>Vehicle Type</label><select id="dtype"><option>Sedan</option><option>XUV</option><option>Innova MUV</option></select></div>
+      </div>
+      <button class="btn action" onclick="driverOnline()">🟢 GO ONLINE</button>
+      <div id="driverMsg" class="success"></div>
+    </div>
+    <div class="card">
+      <h2>📋 Local Booking List</h2>
+      <div id="driverJobs"></div>
+    </div>
+  </section>
+
+  <section id="admin" class="panel">
+    <div class="card">
+      <h2>🔐 Admin Dashboard</h2>
+      <div class="grid">
+        <div><label>Trip ID</label><input id="tripId" placeholder="Booking ID"></div>
+        <div><label>Driver Name</label><input id="aname" placeholder="Driver name"></div>
+        <div><label>Driver Phone</label><input id="aphone" placeholder="Driver phone"></div>
+        <div><label>Vehicle Number</label><input id="avehicle" placeholder="Vehicle number"></div>
+      </div>
+      <button class="btn action" onclick="assignDriver()">📲 ASSIGN & NOTIFY</button>
+    </div>
+    <div class="card">
+      <h2>📊 Bookings</h2>
+      <div id="adminBookings"></div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  © 2026 ONE WAY EXPRESS • OUTSTATION DROP TAXI<br>
+  Tamil Nadu • Bangalore • Pondicherry
+</footer>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+let selectedVehicle={name:"Sedan",rate:14};
+let map, markers=[];
+
+document.getElementById("date").value=new Date().toISOString().slice(0,10);
+
+function showPanel(id,btn){
+  document.querySelectorAll(".panel").forEach(p=>p.classList.remove("active"));
+  document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  btn.classList.add("active");
+  if(id==="driver") loadDriverJobs();
+  if(id==="admin") loadAdmin();
+}
+
+function selectVehicle(el){
+  document.querySelectorAll(".vehicle").forEach(v=>v.classList.remove("selected"));
+  el.classList.add("selected");
+  selectedVehicle={name:el.dataset.name,rate:Number(el.dataset.rate)};
+  calculateFare();
+}
+
+function calculateFare(){
+  const km=Math.max(0,Number(document.getElementById("km").value)||0);
+  const carrier=Number(document.getElementById("extra").value)||0;
+  const distanceFare=km*selectedVehicle.rate;
+  const total=distanceFare+400+carrier;
+  const advance=Math.round(total*.15);
+  document.getElementById("distanceFare").textContent="₹"+distanceFare.toLocaleString("en-IN");
+  document.getElementById("carrierFare").textContent="₹"+carrier.toLocaleString("en-IN");
+  document.getElementById("total").textContent="₹"+total.toLocaleString("en-IN");
+  document.getElementById("advance").textContent="₹"+advance.toLocaleString("en-IN");
+  document.getElementById("balance").textContent="₹"+(total-advance).toLocaleString("en-IN");
+}
+
+function getBookings(){return JSON.parse(localStorage.getItem("owe_bookings")||"[]")}
+function saveBookings(x){localStorage.setItem("owe_bookings",JSON.stringify(x))}
+
+function bookTrip(){
+  const name=document.getElementById("cname").value.trim();
+  const phone=document.getElementById("cphone").value.trim();
+  const from=document.getElementById("from").value.trim();
+  const to=document.getElementById("to").value.trim();
+  const km=Number(document.getElementById("km").value)||0;
+  if(!name||!phone||!from||!to||!km){alert("Please fill Name, Mobile, From, To and KM.");return}
+  if(!document.getElementById("agree").checked){alert("Please accept the booking agreement.");return}
+
+  const carrier=Number(document.getElementById("extra").value)||0;
+  const total=km*selectedVehicle.rate+400+carrier;
+  const advance=Math.round(total*.15);
+  const id="OWE"+Date.now().toString().slice(-7);
+  const booking={
+    id,name,phone,from,to,km,vehicle:selectedVehicle.name,
+    date:document.getElementById("date").value,
+    time:document.getElementById("time").value,
+    total,advance,balance:total-advance,status:"New"
+  };
+  const list=getBookings(); list.push(booking); saveBookings(list);
+
+  const msg=`ONE WAY EXPRESS - OUTSTATION DROP TAXI%0A%0ATrip ID: ${id}%0ACustomer: ${name}%0AMobile: ${phone}%0AFrom: ${from}%0ATo: ${to}%0ADate: ${booking.date}%0ATime: ${booking.time}%0AKM: ${km}%0AVehicle: ${selectedVehicle.name}%0ATotal: ₹${total}%0AAdvance 15%: ₹${advance}%0ABalance: ₹${total-advance}`;
+  document.getElementById("success").style.display="block";
+  document.getElementById("success").innerHTML=`✅ Booking created: <b>${id}</b><br>WhatsApp is opening...`;
+  window.open("https://wa.me/918838313772?text="+msg,"_blank");
+}
+
+function driverOnline(){
+  localStorage.setItem("owe_driver",JSON.stringify({
+    name:document.getElementById("dname").value,
+    phone:document.getElementById("dphone").value,
+    vehicle:document.getElementById("dvehicle").value,
+    type:document.getElementById("dtype").value,
+    online:true
+  }));
+  const m=document.getElementById("driverMsg");m.style.display="block";m.textContent="🟢 Driver is now online.";
+  loadDriverJobs();
+}
+
+function loadDriverJobs(){
+  const box=document.getElementById("driverJobs"), list=getBookings();
+  if(!list.length){box.innerHTML="<p>No bookings yet.</p>";return}
+  box.innerHTML=list.map(b=>`<div class="job"><span class="badge">${b.status}</span><h3>${b.id}</h3><p>👤 ${b.name} • 📞 ${b.phone}</p><p>📍 ${b.from} → ${b.to}</p><p>🚗 ${b.vehicle} • ${b.km} KM • ₹${b.total.toLocaleString("en-IN")}</p></div>`).join("");
+}
+
+function loadAdmin(){
+  const box=document.getElementById("adminBookings"), list=getBookings();
+  if(!list.length){box.innerHTML="<p>No bookings yet.</p>";return}
+  box.innerHTML=list.map(b=>`<div class="job"><span class="badge">${b.status}</span><h3>${b.id}</h3><p><b>${b.name}</b> • ${b.phone}</p><p>${b.from} → ${b.to}</p><p>${b.date} ${b.time} • ${b.vehicle} • ${b.km} KM • ₹${b.total.toLocaleString("en-IN")}</p></div>`).join("");
+}
+
+function assignDriver(){
+  const id=document.getElementById("tripId").value.trim();
+  const list=getBookings();
+  const b=list.find(x=>x.id===id);
+  if(!b){alert("Trip ID not found.");return}
+  b.driver=document.getElementById("aname").value;
+  b.driverPhone=document.getElementById("aphone").value;
+  b.driverVehicle=document.getElementById("avehicle").value;
+  b.status="Driver Assigned";
+  saveBookings(list);
+  alert("Driver assigned successfully.");
+  loadAdmin();
+  const msg=`ONE WAY EXPRESS - DRIVER ASSIGNMENT%0ATrip ID: ${b.id}%0ACustomer: ${b.name}%0AFrom: ${b.from}%0ATo: ${b.to}%0ADate: ${b.date} ${b.time}%0ADriver: ${b.driver}%0AVehicle: ${b.driverVehicle}`;
+  if(b.driverPhone) window.open("https://wa.me/91"+b.driverPhone.replace(/\D/g,"")+"?text="+msg,"_blank");
+}
+
+function initMap(){
+  map=L.map("map").setView([11.1271,78.6569],7);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution:"© OpenStreetMap contributors"}).addTo(map);
+}
+setTimeout(initMap,100);
+calculateFare();
+</script>
+</body>
+</html>
